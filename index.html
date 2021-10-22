@@ -3,11 +3,38 @@
 <head>
     <!-- <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script> -->
     <script src="./lib/phaser.min.js"></script>
-</head>
-<body>
     <script src="./js/Boot.js"></script>
     <script src="./js/Play.js"></script>
     <script src="./js/main.js"></script>
+    <!-- <script src="./js/FormUtil.js"></script> -->
+</head>
+<body>
+
+    <textarea disabled id="txtArea" style="display:none" class="txtArea"></textarea>
+    <div id="game-container">
+        <div id="gameCanvasDiv"></div>
+    </div>
+
+    <div id="question" style="display: none" class="question-popup">
+        <div id="questionWindow" class="question-container question-hide">
+            <div class="quiz-container">
+                <div id="quiz">
+                </div>
+            </div>
+            <div class="submitMsg-container">
+                <div id="submitMsg">
+                </div>
+            </div>
+            <div id="submitAnswerButton" class="submitAnswerButton-container">
+                <button id="submit">Submit</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- <input type="text" id="myText"/>
+    <textarea id="area51">SOME TEXT HERE</textarea> -->
+
     <script>
     // var config = {
     //     type: Phaser.AUTO,

@@ -10,6 +10,38 @@ body {
     background-position: right, left;
   }
 
+
+#gameCanvasDiv { 
+    margin: 0; position: absolute; top: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);
+}
+
+  body {
+    padding: 0px;
+    margin: 0px;
+    background: #862C2C;
+    overflow-x: hidden;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+width: 12px;
+height: 12px;
+}
+
+::-webkit-scrollbar-track {
+border: 1px solid red;
+border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+background: #fb685d;  
+border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: #fb9891;  
+}
+
   /* Give headings their own font */
 
   h1, h2, h3, h4, h5 {

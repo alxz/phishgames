@@ -1,6 +1,80 @@
 class Play extends Phaser.Scene {
     count = 0;
+    cWidth = 800; //canvas width
+    cHeight = 600; //canvas height
+    questionWindow = document.getElementById("questionWindow");
+
+
+    devices = {
+        imgKey: {
+            0: `laptop`, 
+            1: `monitor`, 
+            2: `smartphone`
+        },
+        imgScale: {
+            0: 2,
+            1: 2,
+            2: 1
+        },
+        objName: {
+            0: `laptop`, 
+            1: `monitor`, 
+            2: `smartphone`
+        },
+        imgCoord: {
+            0: {
+                x: 160,
+                y: 470
+            },
+            1: {
+                x: 720,
+                y: 300
+            },
+            2: {
+                x: 520,
+                y: 410
+            }
+        }      
+    }
     
+
+    /*
+        this.questionLaptop = this.physics.add.sprite(170,470, `question`);
+        this.questionSmartPhone = this.physics.add.sprite(530,400, `question`);
+        this.questionMonitor = this.physics.add.sprite(720,290, `question`);
+    */
+    questions = {
+            imgKey: {
+                0: `question`, 
+                1: `question`, 
+                2: `question`
+            },
+            imgScale: {
+                0: 1,
+                1: 1,
+                2: 1
+            },
+            objName: {
+                0: `questionLaptop`, 
+                1: `questionMonitor`, 
+                2: `questionSmartPhone`
+            },
+            imgCoord: {
+                0: {
+                    x: 170,
+                    y: 470
+                },
+                1: {
+                    x: 530,
+                    y: 400
+                },
+                2: {
+                    x: 720,
+                    y: 290
+                }
+            } 
+    }   
+
     constructor() {
         super({
             key: `play`
@@ -21,28 +95,16 @@ class Play extends Phaser.Scene {
         background.displayWidth = this.sys.canvas.width;
         background.displayHeight = this.sys.canvas.height;
 
+        /*
+        this.laptop = this.physics.add.image(160, 470, `laptop`).setScale(2); 
+        this.monitor = this.physics.add.image(720, 300, `monitor`).setScale(2); 
+        this.smartphone = this.physics.add.image(520, 410, `smartphone`).setScale(1); 
+        */
 
         this.wallS = this.physics.add.staticGroup();
         this.buildWalls();
 
         /*
-        this.wallS = this.physics.add.group({
-            key: `brickwall`,
-            immovable: true,
-            quantity: 16
-        });
-
-        this.wallS.children.each(function(wall) {
-            let x = Math.random() * this.sys.canvas.width;
-            let y = Math.random() * this.sys.canvas.height;
-            wall.setPosition( x, y );
-            wall.setTint(0xdd3333);
-        }, this );
-        */
-
-        // this.collectable = this.physics.add.sprite(260,200, `bell`);
-        // this.collectable.setTint(0x88ff00);
-
         this.collectableS = this.physics.add.group({
             key: `bellsShaking`,
             immovable: true,
@@ -55,18 +117,65 @@ class Play extends Phaser.Scene {
             collectable.setPosition( x, y );
             collectable.setTint(0x88ff00);
         }, this );
+        */
+
+        this.interactObjs = this.physics.add.group({
+            key: `interactObjs`,
+            immovable: true,
+            quantity: 3
+        });
+
+        let idx = 0;
+        this.interactObjs.children.each(function(interactiveObject) {
+            // building  devices  group:
+            let x = this.devices.imgCoord[idx].x;
+            let y = this.devices.imgCoord[idx].y;
+            let name = this.devices.objName[idx];
+            let texture = this.devices.imgKey[idx];
+            let scale = this.devices.imgScale[idx];
+            interactiveObject.setPosition( x, y );
+            interactiveObject.setName(name);
+            interactiveObject.setTexture(texture).setScale(scale); 
+            idx++;
+        }, this );
+
+        this.interactQuestions = this.physics.add.group({
+            key: `interactQuestions`,
+            immovable: true,
+            quantity: 3
+        });
+
+        idx = 0;
+        this.interactQuestions.children.each(function(interactQuestion) {
+            // building  questions  group:
+            let x = this.questions.imgCoord[idx].x;
+            let y = this.questions.imgCoord[idx].y;
+            let imgKey = this.questions.imgKey[idx];
+            let name = this.questions.objName[idx];
+            let texture = this.questions.imgKey[idx];
+            let scale = this.questions.imgScale[idx];
+            interactQuestion.setPosition( x, y );
+            interactQuestion.setName(name);
+            interactQuestion.setTexture(texture).setScale(scale); 
+            interactQuestion.setData( {name: name, imgKey: imgKey});
+            idx++;
+        }, this );
 
         this.avatar = this.physics.add.sprite(200,200, `avatar`);
 
         //dudeWalk
         this.dude = this.physics.add.sprite(400,500, `dudeWalk`).setScale(3);
+        // this.cameras.main.startFollow(this.dude); /* This allow camera to follow the player character.  */
 
         this.createAnimations(); // add some animation for movements and for idle state(s)
-
+        this.interactQuestions.children.each(function(interactQuestion) {            
+            interactQuestion.play(`question-turning`);
+        }, this );
+        /*
         this.collectableS.children.each(function(collectable) {            
             collectable.play(`bell-shake`);
         }, this );
-
+        */        
         // this.avatar.setVelocity(100, 200);
         // this.avatar.setVelocityX(100);        
         // this.avatar.setBounce(1, 1);
@@ -76,13 +185,16 @@ class Play extends Phaser.Scene {
         this.avatar.play(`avatar-idle`);        
         this.dude.play(`dude-idle`);        
 
-        // this.physics.add.collider(this.avatar, this.wallS);
-        // this.physics.add.overlap(this.avatar, this.collectableS, this.collectiItem, null, this);
-
         this.physics.add.collider(this.dude, this.wallS);
-        this.physics.add.overlap(this.dude, this.collectableS, this.collectiItem, null, this);
+        // this.physics.add.overlap(this.dude, this.collectableS, this.collectiItem, null, this);
+
+        // interaction with interactObjs:
+        this.physics.add.overlap(this.dude, this.interactQuestions, this.collectiItem, null, this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
+
+
+
         /*
         let style = { 
             fontFamily: 'sans-serif', 
@@ -101,21 +213,19 @@ class Play extends Phaser.Scene {
 
         this.wall = this.physics.add.image(100,100, `wall`);
         this.wall.setTint(0xdd3333);
-
-        this.avatar = this.physics.add.sprite(200,200, `avatar`);
-
-        this.createAnimations();
-
-        this.avatar.setVelocityX(100);
-        this.avatar.play(`avatar-idle`);
         */
     }
+
+
     collectiItem(avatar, collectable) {
-        console.log("Overlap!");
+        console.log("Overlap! ");
+        console.log(collectable.getData(`name`));
         collectable.destroy();
         this.count ++;
-        if (this.count >= 10) {
+        this.displayDiv("question", true);
+        if (this.count >= 3) {
             console.log("All object collected!");
+            // this.displayDiv("txtArea", true);
         }
     }
 
@@ -152,33 +262,7 @@ class Play extends Phaser.Scene {
             this.dude.play(`dude-idle`, true);
         }
 
-        /*
-        this.avatar.setVelocity(0);
-
-        if (this.cursors.left.isDown)
-        {
-            this.avatar.setVelocityX(-300);
-        }
-        else if (this.cursors.right.isDown)
-        {
-            this.avatar.setVelocityX(300);
-        }
-    
-        if (this.cursors.up.isDown)
-        {
-            this.avatar.setVelocityY(-300);
-        }
-        else if (this.cursors.down.isDown)
-        {
-            this.avatar.setVelocityY(300);
-        }
-
-        if (this.avatar.body.velocity.x !== 0 || this.avatar.body.velocity.y !== 0) {
-            this.avatar.play(`avatar-moving`, true);
-        } else {
-            this.avatar.play(`avatar-idle`, true);
-        }
-        */
+        
     }
 
     createAnimations() {
@@ -262,6 +346,16 @@ class Play extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: `question-turning`,
+            frames: this.anims.generateFrameNumbers(`question`, {
+                start: 0,
+                end: 9
+            }),
+            frameRate: 14,
+            repeat: -1
+        });
+
     }
 
 
@@ -279,14 +373,72 @@ class Play extends Phaser.Scene {
         }
 
         for (let i=0; i< 1 ; i++) {
-            this.wallS.create(50, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            // this.wallS.create(50, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
             this.wallS.create(100, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();
             this.wallS.create(200, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
             this.wallS.create(250, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
             this.wallS.create(520, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
             this.wallS.create(570, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();  
-            this.wallS.create(120, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(640, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(160, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(620, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+        }
+    }
+
+
+
+    displayDiv(id, display) {
+        var x = document.getElementById(id);
+        if (display) {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
         }
     }
 }
+
+
+        /*
+        this.wallS = this.physics.add.group({
+            key: `brickwall`,
+            immovable: true,
+            quantity: 16
+        });
+
+        this.wallS.children.each(function(wall) {
+            let x = Math.random() * this.sys.canvas.width;
+            let y = Math.random() * this.sys.canvas.height;
+            wall.setPosition( x, y );
+            wall.setTint(0xdd3333);
+        }, this );
+        */
+
+        // this.collectable = this.physics.add.sprite(260,200, `bell`);
+        // this.collectable.setTint(0x88ff00);
+
+        /*
+        this.avatar.setVelocity(0);
+
+        if (this.cursors.left.isDown)
+        {
+            this.avatar.setVelocityX(-300);
+        }
+        else if (this.cursors.right.isDown)
+        {
+            this.avatar.setVelocityX(300);
+        }
+    
+        if (this.cursors.up.isDown)
+        {
+            this.avatar.setVelocityY(-300);
+        }
+        else if (this.cursors.down.isDown)
+        {
+            this.avatar.setVelocityY(300);
+        }
+
+        if (this.avatar.body.velocity.x !== 0 || this.avatar.body.velocity.y !== 0) {
+            this.avatar.play(`avatar-moving`, true);
+        } else {
+            this.avatar.play(`avatar-idle`, true);
+        }
+        */

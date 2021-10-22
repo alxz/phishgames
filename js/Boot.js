@@ -11,8 +11,8 @@ class Boot extends Phaser.Scene {
         this.load.image(`brickwall`, `assets/images/brickwall.png`);
 
         //block20x20light | block20x20red
-        this.load.image(`blockInvis`, `assets/images/block20x20.png`);
-        //this.load.image(`blockInvis`, `assets/images/block20x20red.png`);
+        //this.load.image(`blockInvis`, `assets/images/block20x20.png`);
+        this.load.image(`blockInvis`, `assets/images/block20x20red.png`);
 
 
         this.load.image(`wall`, `assets/images/wall.png`);
@@ -21,7 +21,7 @@ class Boot extends Phaser.Scene {
 
         this.load.image(`laptop`, `assets/images/laptop50x34face.png`);
         this.load.image(`monitor`, `assets/images/monitor60x49face.png`);
-        this.load.image(`smartphone`, `assets/images/smartphone20x37face.png`);
+        this.load.image(`smartphone`, `assets/images/mobile-tablet-50x65.png`);
 
         this.load.spritesheet(`avatar`, `assets/images/avatar.png`, {
             frameWidth: 32,
@@ -40,10 +40,17 @@ class Boot extends Phaser.Scene {
         });
 
         //dude_Sprite.png
-        this.load.spritesheet(`dudeWalk`, `assets/images/dude_Sprite.png`, {
+        this.load.spritesheet(`dudeWalk`, `assets/images/docOther.png`, {
             frameWidth: 50,
             frameHeight: 75,
             endFrame: 15
+        });
+
+        //questionMark.png
+        this.load.spritesheet(`question`, `assets/images/questionMark.png`, {
+            frameWidth: 50,
+            frameHeight: 50,
+            endFrame: 9
         });
     }
 
