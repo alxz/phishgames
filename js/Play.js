@@ -3,7 +3,7 @@ class Play extends Phaser.Scene {
     cWidth = 800; //canvas width
     cHeight = 600; //canvas height
     questionWindow = document.getElementById("questionWindow");
-
+    questionsArray = [];
 
     devices = {
         imgKey: {
@@ -82,6 +82,8 @@ class Play extends Phaser.Scene {
     }
 
     create() {
+        this.loadData();
+
         /*
         this.wall = this.physics.add.image(100, 100, `wall`);       
         this.wall.setImmovable(true); // if you set it to false - the object will go away ...
@@ -146,14 +148,14 @@ class Play extends Phaser.Scene {
         });
 
         idx = 0;
-        this.interactQuestions.children.each(function(interactQuestion) {
+        this.interactQuestions.children.each( (interactQuestion,index) => {
             // building  questions  group:
-            let x = this.questions.imgCoord[idx].x;
-            let y = this.questions.imgCoord[idx].y;
-            let imgKey = this.questions.imgKey[idx];
-            let name = this.questions.objName[idx];
-            let texture = this.questions.imgKey[idx];
-            let scale = this.questions.imgScale[idx];
+            let x = this.questions.imgCoord[index].x;
+            let y = this.questions.imgCoord[index].y;
+            let imgKey = this.questions.imgKey[index];
+            let name = this.questions.objName[index];
+            let texture = this.questions.imgKey[index];
+            let scale = this.questions.imgScale[index];
             interactQuestion.setPosition( x, y );
             interactQuestion.setName(name);
             interactQuestion.setTexture(texture).setScale(scale); 
@@ -216,13 +218,46 @@ class Play extends Phaser.Scene {
         */
     }
 
+    loadData() {
+
+        function loadJSON(callback) {   
+
+            var xobj = new XMLHttpRequest();
+                xobj.overrideMimeType("application/json");
+            xobj.open('GET', './assets/data.json', true); 
+            xobj.onreadystatechange = function () {
+                  if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value 
+                    // but simply returns undefined in asynchronous mode
+                    callback(xobj.responseText);
+                  }
+            };
+            xobj.send(null);  
+         }
+
+        loadJSON((response) => {
+            // Parse JSON string into object
+              this.questionsArray = JSON.parse(response);
+           });
+    }
 
     collectiItem(avatar, collectable) {
         console.log("Overlap! ");
         console.log(collectable.getData(`name`));
+        console.log( this.questionsArray[0].image) ;
+        //question-popup-show 
+        document.getElementById("question").style.setProperty("display", "block")
+        document.getElementById("question").className = "question_popup_show";
+
+        //questionWindow - to show the image and question
+        // document.getElementById("questionWindow").className = "question_container";
+
+        document.getElementById("question_image").src = this.questionsArray[0].image;
         collectable.destroy();
         this.count ++;
-        this.displayDiv("question", true);
+        //document.getElementById("questionWindow").style.setProperty("display", "block")
+
+        // this.displayDiv("question", true);
         if (this.count >= 3) {
             console.log("All object collected!");
             // this.displayDiv("txtArea", true);

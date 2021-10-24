@@ -1,0 +1,23 @@
+[
+    {   
+        "id": 0 ,
+        "name" : "questionLaptop", 
+        "title" : "You've got new message!",
+        "text" : "New Email: Check the address and the mail body",
+        "image" : "./assets/images/femail1.png"
+    },
+    {
+        "id": 1 ,
+        "name" : "questionMonitor", 
+        "title" : "New sale event!",
+        "text" : "Super sale only today: Hurry up, sale ends today! Lowest price ever!",
+        "image" : "./assets/images/ftextsms.png"
+    },
+    {
+        "id": 2 ,
+        "name" : "questionSmartPhone", 
+        "title" : "You've got new SMS message!",
+        "text" : "New text message: Your bank account has been locked out today. Please follow the link",
+        "image" : "./assets/images/fwebsite.png"
+    }
+]
