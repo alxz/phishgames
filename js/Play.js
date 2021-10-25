@@ -72,6 +72,11 @@ class Play extends Phaser.Scene {
                     x: 720,
                     y: 290
                 }
+            },
+            id: {
+                0: "0",
+                1: "1",
+                2: "2"
             } 
     }   
 
@@ -154,19 +159,20 @@ class Play extends Phaser.Scene {
             let y = this.questions.imgCoord[index].y;
             let imgKey = this.questions.imgKey[index];
             let name = this.questions.objName[index];
+            let id = this.questions.id[index];
             let texture = this.questions.imgKey[index];
             let scale = this.questions.imgScale[index];
             interactQuestion.setPosition( x, y );
             interactQuestion.setName(name);
             interactQuestion.setTexture(texture).setScale(scale); 
-            interactQuestion.setData( {name: name, imgKey: imgKey});
+            interactQuestion.setData( {name: name, imgKey: imgKey, id: id} );
             idx++;
         }, this );
 
-        this.avatar = this.physics.add.sprite(200,200, `avatar`);
-
+        // this.avatar = this.physics.add.sprite(200,200, `avatar`);
         //dudeWalk
-        this.dude = this.physics.add.sprite(400,500, `dudeWalk`).setScale(3);
+        this.dude = this.physics.add.sprite(400,500, `dudeWalk`).setScale(2);
+        this.dude.setCollideWorldBounds(true);
         // this.cameras.main.startFollow(this.dude); /* This allow camera to follow the player character.  */
 
         this.createAnimations(); // add some animation for movements and for idle state(s)
@@ -181,10 +187,9 @@ class Play extends Phaser.Scene {
         // this.avatar.setVelocity(100, 200);
         // this.avatar.setVelocityX(100);        
         // this.avatar.setBounce(1, 1);
-        this.avatar.setCollideWorldBounds(true);
-        this.dude.setCollideWorldBounds(true);
-
-        this.avatar.play(`avatar-idle`);        
+        // this.avatar.setCollideWorldBounds(true);
+        // this.dude.setCollideWorldBounds(true);
+        // this.avatar.play(`avatar-idle`);        
         this.dude.play(`dude-idle`);        
 
         this.physics.add.collider(this.dude, this.wallS);
@@ -221,7 +226,6 @@ class Play extends Phaser.Scene {
     loadData() {
 
         function loadJSON(callback) {   
-
             var xobj = new XMLHttpRequest();
                 xobj.overrideMimeType("application/json");
             xobj.open('GET', './assets/data.json', true); 
@@ -239,12 +243,14 @@ class Play extends Phaser.Scene {
             // Parse JSON string into object
               this.questionsArray = JSON.parse(response);
            });
+           
     }
 
     collectiItem(avatar, collectable) {
         console.log("Overlap! ");
         console.log(collectable.getData(`name`));
-        console.log( this.questionsArray[0].image) ;
+        console.log( collectable.getData(`id`)) ;
+        let imgId = collectable.getData(`id`);
         //question-popup-show 
         document.getElementById("question").style.setProperty("display", "block")
         document.getElementById("question").className = "question_popup_show";
@@ -252,7 +258,13 @@ class Play extends Phaser.Scene {
         //questionWindow - to show the image and question
         // document.getElementById("questionWindow").className = "question_container";
 
-        document.getElementById("question_image").src = this.questionsArray[0].image;
+        document.getElementById("question_image").src = this.questionsArray[imgId].image;
+
+        document.getElementById("decline").onclick = function() {
+            document.getElementById("question").style.setProperty("display", "none");
+            // displayDiv("question", false);
+        };
+
         collectable.destroy();
         this.count ++;
         //document.getElementById("questionWindow").style.setProperty("display", "block")
@@ -403,19 +415,19 @@ class Play extends Phaser.Scene {
         });
 
         for (let i=0; i< 18; i++) {
-            this.wallS.create(40 + (i * 40), 240, 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(40 + (i * 40), 310, 'blockInvis').setScale(1).refreshBody();            
 
         }
 
         for (let i=0; i< 1 ; i++) {
             // this.wallS.create(50, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(100, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();
-            this.wallS.create(200, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(250, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(520, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(570, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();  
-            this.wallS.create(160, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(620, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(100, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();
+            this.wallS.create(200, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(250, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(520, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(570, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();  
+            this.wallS.create(160, 400 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(620, 400 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
         }
     }
 
