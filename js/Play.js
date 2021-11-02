@@ -1,9 +1,35 @@
 class Play extends Phaser.Scene {
     count = 0;
+    gameState = {
+        isPaused: false
+    };
+    isPaused = false;
     cWidth = 800; //canvas width
     cHeight = 600; //canvas height
     questionWindow = document.getElementById("questionWindow");
     questionsArray = [];
+    questionBank = [];
+    questionOrder = [];
+    caption;
+    captionStyle = {
+        fill: `#F4D03F`,
+        fontFamily: `monospace`,
+        lineSpacing: 4
+    };
+    captionTextFormat = (
+        'Player.old X:       %1\n' +
+        'Player.old Y:       %2\n' +
+        'Player.current X:   %3\n' +
+        'Player.current Y:   %4\n' +
+        'isPaused:          %5'
+    );
+    oldCoord = {
+        x: 0, y: 0
+    };
+    currentCoord = {
+        x: 0, y: 0
+    };
+
 
     devices = {
         imgKey: {
@@ -12,8 +38,8 @@ class Play extends Phaser.Scene {
             2: `smartphone`
         },
         imgScale: {
-            0: 2,
-            1: 2,
+            0: 1.9,
+            1: 1.8,
             2: 1
         },
         objName: {
@@ -24,25 +50,19 @@ class Play extends Phaser.Scene {
         imgCoord: {
             0: {
                 x: 160,
-                y: 470
+                y: 420
             },
             1: {
-                x: 720,
-                y: 300
+                x: 750,
+                y: 260
             },
             2: {
-                x: 520,
-                y: 410
+                x: 550,
+                y: 400
             }
         }      
     }
     
-
-    /*
-        this.questionLaptop = this.physics.add.sprite(170,470, `question`);
-        this.questionSmartPhone = this.physics.add.sprite(530,400, `question`);
-        this.questionMonitor = this.physics.add.sprite(720,290, `question`);
-    */
     questions = {
             imgKey: {
                 0: `question`, 
@@ -62,15 +82,15 @@ class Play extends Phaser.Scene {
             imgCoord: {
                 0: {
                     x: 170,
-                    y: 470
+                    y: 420
                 },
                 1: {
-                    x: 530,
-                    y: 400
+                    x: 750,
+                    y: 260
                 },
                 2: {
-                    x: 720,
-                    y: 290
+                    x: 550,
+                    y: 400
                 }
             },
             id: {
@@ -88,7 +108,7 @@ class Play extends Phaser.Scene {
 
     create() {
         this.loadData();
-
+        this.cameras.main.setBackgroundColor('#333');
         /*
         this.wall = this.physics.add.image(100, 100, `wall`);       
         this.wall.setImmovable(true); // if you set it to false - the object will go away ...
@@ -99,14 +119,8 @@ class Play extends Phaser.Scene {
             .image(this.sys.canvas.width /2, this.sys.canvas.height / 2, `background`)
             .setOrigin(0.5, 0.5);
         // Based on your game size, it may "stretch" and distort.
-        background.displayWidth = this.sys.canvas.width;
+        background.displayWidth = this.sys.canvas.width * 1.05;
         background.displayHeight = this.sys.canvas.height;
-
-        /*
-        this.laptop = this.physics.add.image(160, 470, `laptop`).setScale(2); 
-        this.monitor = this.physics.add.image(720, 300, `monitor`).setScale(2); 
-        this.smartphone = this.physics.add.image(520, 410, `smartphone`).setScale(1); 
-        */
 
         this.wallS = this.physics.add.staticGroup();
         this.buildWalls();
@@ -146,50 +160,27 @@ class Play extends Phaser.Scene {
             idx++;
         }, this );
 
+        // this.avatar = this.physics.add.sprite(200,200, `avatar`);
+        this.dude = this.physics.add.sprite(400,500, `dudeWalk`).setScale(2);
+        this.dude.setCollideWorldBounds(true);
+        this.cameras.main.startFollow(this.dude); /* This allow camera to follow the player character.  */
+
+        this.createAnimations(); // add some animation for movements and for idle state(s)
+
         this.interactQuestions = this.physics.add.group({
             key: `interactQuestions`,
             immovable: true,
             quantity: 3
         });
+        console.log('interactQuestions objec:');
+        console.log(this.interactQuestions);
+        console.log('< ======= <');
 
-        idx = 0;
-        this.interactQuestions.children.each( (interactQuestion,index) => {
-            // building  questions  group:
-            let x = this.questions.imgCoord[index].x;
-            let y = this.questions.imgCoord[index].y;
-            let imgKey = this.questions.imgKey[index];
-            let name = this.questions.objName[index];
-            let id = this.questions.id[index];
-            let texture = this.questions.imgKey[index];
-            let scale = this.questions.imgScale[index];
-            interactQuestion.setPosition( x, y );
-            interactQuestion.setName(name);
-            interactQuestion.setTexture(texture).setScale(scale); 
-            interactQuestion.setData( {name: name, imgKey: imgKey, id: id} );
-            idx++;
-        }, this );
-
-        // this.avatar = this.physics.add.sprite(200,200, `avatar`);
-        //dudeWalk
-        this.dude = this.physics.add.sprite(400,500, `dudeWalk`).setScale(2);
-        this.dude.setCollideWorldBounds(true);
-        // this.cameras.main.startFollow(this.dude); /* This allow camera to follow the player character.  */
-
-        this.createAnimations(); // add some animation for movements and for idle state(s)
-        this.interactQuestions.children.each(function(interactQuestion) {            
-            interactQuestion.play(`question-turning`);
-        }, this );
         /*
         this.collectableS.children.each(function(collectable) {            
             collectable.play(`bell-shake`);
         }, this );
-        */        
-        // this.avatar.setVelocity(100, 200);
-        // this.avatar.setVelocityX(100);        
-        // this.avatar.setBounce(1, 1);
-        // this.avatar.setCollideWorldBounds(true);
-        // this.dude.setCollideWorldBounds(true);
-        // this.avatar.play(`avatar-idle`);        
+        */              
         this.dude.play(`dude-idle`);        
 
         this.physics.add.collider(this.dude, this.wallS);
@@ -197,10 +188,7 @@ class Play extends Phaser.Scene {
 
         // interaction with interactObjs:
         this.physics.add.overlap(this.dude, this.interactQuestions, this.collectiItem, null, this);
-
         this.cursors = this.input.keyboard.createCursorKeys();
-
-
 
         /*
         let style = { 
@@ -221,6 +209,7 @@ class Play extends Phaser.Scene {
         this.wall = this.physics.add.image(100,100, `wall`);
         this.wall.setTint(0xdd3333);
         */
+        this.caption = this.add.text(16,16,'', this.captionStyle);
     }
 
     loadData() {
@@ -242,15 +231,23 @@ class Play extends Phaser.Scene {
         loadJSON((response) => {
             // Parse JSON string into object
               this.questionsArray = JSON.parse(response);
-           });
-           
+              console.log(this.questionsArray);
+            this.generateQBank(this.questionsArray); 
+            this.creteQObject(this.questionOrder[0]);
+        });
     }
 
     collectiItem(avatar, collectable) {
-        console.log("Overlap! ");
-        console.log(collectable.getData(`name`));
-        console.log( collectable.getData(`id`)) ;
+        this.isPaused = true;
+        this.setPlayerIdle(); 
+        console.log('this.isPaused = ', this.isPaused);
+        
+        this.dude.x = this.oldCoord.x;
+        this.dude.y = this.oldCoord.y;
+        console.log("Overlap! ", collectable.getData(`name`), collectable.getData(`id`));
         let imgId = collectable.getData(`id`);
+        let newImgId = collectable.getData(`id`);
+        console.log('See the imgId= ', imgId, ' and newImgId: ', newImgId);
         //question-popup-show 
         document.getElementById("question").style.setProperty("display", "block")
         document.getElementById("question").className = "question_popup_show";
@@ -260,56 +257,127 @@ class Play extends Phaser.Scene {
 
         document.getElementById("question_image").src = this.questionsArray[imgId].image;
 
-        document.getElementById("decline").onclick = function() {
+        document.getElementById("yes").onclick = function(isPaused) {
             document.getElementById("question").style.setProperty("display", "none");
             // displayDiv("question", false);
+            this.count ++;
+            // this.gameState.isPaused = false;
+            this.isPaused = false;
+            console.log(`confirmed button clicked!`);
+            console.log('this.isPaused = ', this.isPaused);
+        };
+        document.getElementById("no").onclick = function() {
+            document.getElementById("question").style.setProperty("display", "none");
+            // displayDiv("question", false);
+            // this.gameState.isPaused = false;
+            this.count ++;
+            this.isPaused = false;
+            console.log(`cancel button clicked!`);
+            console.log('this.isPaused = ', this.isPaused);
         };
 
-        collectable.destroy();
-        this.count ++;
-        //document.getElementById("questionWindow").style.setProperty("display", "block")
+        console.log('Array/this.questionOrder/: ',this.questionOrder);
+        let curIndex;
+        let nextIndex;
 
-        // this.displayDiv("question", true);
+        for (let i=0; i < this.questionOrder.length ; i++) {
+            console.log('=>[',i,'] (this.questionOrder[i])= ', this.questionOrder[i] ); 
+            if ( this.questionOrder[i] == newImgId ) {
+                console.log('Identified newImgId= ', newImgId, ' and [i] as index is =', i );
+                curIndex = i;
+                break;
+            }
+        }
+        console.log('Before update of newImgId (=',newImgId,'), check curIndex: ', curIndex );
+        if ( curIndex == this.questionOrder.length -1 ) {
+            console.log('Image Id reseet required!'); 
+            newImgId = this.questionOrder[0];
+            nextIndex = 0;
+            console.log('New Image Id: ', newImgId);
+        } else {
+            console.log('Index could be incremented...'); 
+            newImgId = this.questionOrder[curIndex+1];      
+            nextIndex =  curIndex+1;      
+            console.log('Updated to the next Image Id! newImgId: ', newImgId); 
+        }
+        
+        console.log('At this point newImgId (=',newImgId,'), old index (curIndex) = ', curIndex, ' next Index (nextIndex) = ', nextIndex );
+        this.creteQObject(newImgId);
+        
         if (this.count >= 3) {
             console.log("All object collected!");
-            // this.displayDiv("txtArea", true);
         }
+        console.log(`collectable object: `, collectable);
+        collectable.destroy();
+        
+    }
+
+    updatePlayerPreCoord(x,y) {
+        this.oldCoord.x = x;
+        this.oldCoord.y = y;
+    }
+
+    updatePlayerPostCoord(x,y) {
+        this.currentCoord.x = x;
+        this.currentCoord.y = y;
+    }
+
+    setPlayerIdle() {
+        this.dude.setVelocity(0);
+        this.dude.play(`dude-idle`, true); 
     }
 
     update() {
         // console.log(`Play scene uopdated`);
+        // if (this.isPaused  === true) {
+        //     return;
+        // }
 
         this.dude.setVelocity(0);
 
         if (this.cursors.left.isDown)
         {
+            this.updatePlayerPreCoord(this.dude.body.x,this.dude.body.y);
             this.dude.setVelocityX(-300);
             this.dude.play(`dude-walk-left`, true);
         }
         else if (this.cursors.right.isDown)
         {
+            this.updatePlayerPreCoord(this.dude.body.x,this.dude.body.y);
             this.dude.setVelocityX(300);
             this.dude.play(`dude-walk-right`, true);
         }
     
         if (this.cursors.up.isDown)
         {
+            this.updatePlayerPreCoord(this.dude.body.x,this.dude.body.y);
             this.dude.setVelocityY(-300);
             this.dude.play(`dude-walk-up`, true);
         }
         else if (this.cursors.down.isDown)
         {
+            this.updatePlayerPreCoord(this.dude.body.x,this.dude.body.y);
             this.dude.setVelocityY(300);
             this.dude.play(`dude-walk-down`, true);
         }
 
         if (this.dude.body.velocity.x !== 0 || this.dude.body.velocity.y !== 0) {
             //this.dude.play(`dude-walk-left`, true);
+            this.currentCoord.x = this.dude.body.x;
+            this.currentCoord.y = this.dude.body.y;
         } else {
-            this.dude.play(`dude-idle`, true);
+            // this.dude.play(`dude-idle`, true);
+            this.setPlayerIdle();            
         }
-
-        
+        this.caption.x = 100 + this.dude.body.x - 400;
+        this.caption.y = 100 + this.dude.body.y - 300;
+        this.caption.setText(Phaser.Utils.String.Format(this.captionTextFormat,[
+            this.oldCoord.x,
+            this.oldCoord.y,
+            this.currentCoord.x,
+            this.currentCoord.y,
+            this.isPaused
+        ]))
     }
 
     createAnimations() {
@@ -411,27 +479,59 @@ class Play extends Phaser.Scene {
         this.wallS = this.physics.add.group({
             key: `blockInvis`,
             immovable: true,
-            quantity: 160
+            quantity: 100
         });
 
-        for (let i=0; i< 18; i++) {
-            this.wallS.create(40 + (i * 40), 310, 'blockInvis').setScale(1).refreshBody();            
-
+        for (let i=0; i< 10; i++) {
+            this.wallS.create(200 + (i * 40), 280, 'blockInvis').setScale(1).refreshBody();            
+        }
+        for (let i=0; i< 3; i++) {
+            this.wallS.create(690 + (i * 40), 260, 'blockInvis').setScale(1).refreshBody();            
         }
 
-        for (let i=0; i< 1 ; i++) {
+
+        for (let i=0; i< 2 ; i++) {
             // this.wallS.create(50, 290 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(100, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();
-            this.wallS.create(200, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(250, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(520, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(570, 380 + ( i * 40), 'blockInvis').setScale(1).refreshBody();  
-            this.wallS.create(160, 400 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
-            this.wallS.create(620, 400 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(80, 230 + ( i * 40), 'blockInvis').setScale(1).refreshBody();
+            this.wallS.create(140, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody(); 
+            this.wallS.create(210, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(270, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();   
+            this.wallS.create(320, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();         
+            this.wallS.create(550, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
+            this.wallS.create(600, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();  
+            this.wallS.create(650, 320 + ( i * 40), 'blockInvis').setScale(1).refreshBody();            
         }
     }
 
 
+    creteQObject(currentIndex) {
+        
+        console.log('Passed to creteQObject(currentIndex) : ', currentIndex);
+        console.log(this.interactQuestions);
+        this.interactQuestions.children.each( (interactQuestion,index) => {
+            // building  questions  group:            
+            console.log('Index: ', index, ' currentIndex: ', currentIndex);
+            if ( currentIndex == index ) {
+                console.log('Got the index index: ', index);
+                let x = this.questions.imgCoord[index].x;
+                let y = this.questions.imgCoord[index].y;
+                let imgKey = this.questions.imgKey[index];
+                let name = this.questions.objName[index];
+                let id = this.questions.id[index];
+                let texture = this.questions.imgKey[index];
+                let scale = this.questions.imgScale[index];
+                interactQuestion.setPosition( x, y );
+                interactQuestion.setName(name);
+                interactQuestion.setTexture(texture).setScale(scale); 
+                interactQuestion.setData( {name: name, imgKey: imgKey, id: id} );
+                interactQuestion.play(`question-turning`);
+                console.log('Creating sprite object: ', interactQuestion);
+                console.log('this.questions.id: ', this.questions.id);
+            }
+            // interactQuestion.setActive(false).setVisible(false);
+            //interactQuestion.visible = false;
+        }, this );
+    }
 
     displayDiv(id, display) {
         var x = document.getElementById(id);
@@ -441,6 +541,32 @@ class Play extends Phaser.Scene {
             x.style.display = "none";
         }
     }
+
+    generateQBank(questionsArray) {
+        let qArrLen = questionsArray.length;
+        if (qArrLen > 0) {
+            for (let i = 0;  i < qArrLen; i ++ ){
+                this.questionOrder.push(questionsArray[i].id);
+            }
+
+            this.shuffleFisherYates(this.questionOrder);
+            console.log("question Queue: ",this.questionOrder);
+        }
+        
+    }
+    getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+    shuffleFisherYates(array) {
+        let i = array.length;
+        while (i--) {
+          const ri = Math.floor(Math.random() * i);
+          [array[i], array[ri]] = [array[ri], array[i]];
+        }
+        return array;
+      }
+      
 }
 
 

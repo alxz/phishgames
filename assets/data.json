@@ -11,13 +11,13 @@
         "name" : "questionMonitor", 
         "title" : "New sale event!",
         "text" : "Super sale only today: Hurry up, sale ends today! Lowest price ever!",
-        "image" : "./assets/images/ftextsms.png"
+        "image" : "./assets/images/fwebsite.png"
     },
     {
         "id": 2 ,
         "name" : "questionSmartPhone", 
         "title" : "You've got new SMS message!",
         "text" : "New text message: Your bank account has been locked out today. Please follow the link",
-        "image" : "./assets/images/fwebsite.png"
+        "image" : "./assets/images/ftextsms.png"
     }
 ]

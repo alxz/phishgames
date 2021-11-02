@@ -11,13 +11,14 @@ class Boot extends Phaser.Scene {
         this.load.image(`brickwall`, `assets/images/brickwall.png`);
 
         //block20x20light | block20x20red
-        this.load.image(`blockInvis`, `assets/images/block20x20.png`);
-        //this.load.image(`blockInvis`, `assets/images/block20x20red.png`);
+        // this.load.image(`blockInvis`, `assets/images/block20x20.png`);
+        this.load.image(`blockInvis`, `assets/images/block20x20red.png`);
 
 
         this.load.image(`wall`, `assets/images/wall.png`);
         // background image:
-        this.load.image(`background`, `assets/images/room_upscaled_cleaned.png`);
+        // this.load.image(`background`, `assets/images/room_upscaled_cleaned.png`);
+        this.load.image(`background`, `assets/images/ChristmassDecoratedRoom.png`);
 
         this.load.image(`laptop`, `assets/images/laptop50x34face.png`);
         this.load.image(`monitor`, `assets/images/monitor60x49face.png`);
